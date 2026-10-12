@@ -180,6 +180,7 @@ h2{font-size:30px;transform:rotate(2deg)}
     </div>
     <div class="hint" id="hint"></div>
     <div class="fb" id="fb"></div>
+    <button class="btn wobble" id="goNotice" style="display:none">ㄱㄱ</button>
   </section>
 
   <!-- 2차 심사 통지서 -->
@@ -346,6 +347,7 @@ function show(id){
   $(id).classList.add("on"); window.scrollTo(0,0);
 }
 $("goQuiz").onclick = () => { audio(); ding(); show("s-quiz"); };
+$("goNotice").onclick = () => { audio(); ding(); show("s-notice2"); };
 $("goWheel").onclick = () => { audio(); ding(); show("s-wheel"); drawWheel(); };
 
 /* ---------- 문제 ---------- */
@@ -363,7 +365,7 @@ function check(){
     fb.className = "fb"; fb.innerHTML = CONFIG.correctMsg;
     $("ansRow").style.display = "none"; $("hint").style.display = "none";
     ding();
-    setTimeout(() => show("s-notice2"), 1400);
+    $("goNotice").style.display = "inline-block";
     return;
   }
   wrong++;
