@@ -287,6 +287,16 @@ h2{font-size:30px;transform:rotate(2deg)}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 .cm-hint{font-size:15px;background:#fff;color:#111;padding:5px 12px;animation:blink2 1s ease-in-out infinite}
 .conf{position:fixed;top:-20px;z-index:72;pointer-events:none;font-size:22px}
+/* 저장 */
+.cardrow{justify-content:space-between;align-items:center}
+.savebtn{font-family:'Black Han Sans',sans-serif;font-size:15px;background:#fff;color:#111;border:3px solid #111;box-shadow:4px 4px 0 var(--c);padding:6px 12px;cursor:pointer}
+.cm-save{position:absolute;top:44px;left:16px;z-index:20;height:40px;border-radius:20px;border:3px solid #fff;background:#111;color:#fff;font-family:'Black Han Sans',sans-serif;font-size:15px;padding:0 14px;cursor:pointer}
+#saveOv{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.95);display:none;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:64px 16px 40px;gap:16px}
+#saveOv.on{display:flex}
+#saveOv img{width:min(320px,82vw);display:block;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.sv-t{color:#fff;font-size:16px;line-height:1.45;text-align:center}
+.sv-share{font-family:'Black Han Sans',sans-serif;font-size:18px;background:#ffe600;color:#111;border:3px solid #111;box-shadow:4px 4px 0 #ff2bd6;padding:8px 18px;cursor:pointer}
+.sv-x{position:fixed;top:16px;right:16px;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:#111;color:#fff;font-size:20px;cursor:pointer;z-index:2}
 #cardModal.pos-a #eqv,#cardModal.pos-a .cm-hint{position:absolute;left:50%;transform:translateX(-50%);margin:0}
 
 
@@ -365,7 +375,7 @@ h2{font-size:30px;transform:rotate(2deg)}
   <!-- 티켓 -->
   <section class="scene" id="s-ticket">
     <h2 id="tTitle">티켓 발급 완료 🎟</h2>
-    <div class="cardrow" id="cardrow"><button class="cardbtn" id="cardBtn">내한 기념 카드 보기 &gt;&gt;</button></div>
+    <div class="cardrow" id="cardrow"><button class="savebtn" id="tSave">💾 티켓 저장</button><button class="cardbtn" id="cardBtn">내한 기념 카드 보기 &gt;&gt;</button></div>
     <div class="flip" id="flip"><div class="flip-inner">
     <div class="ticket face" id="ticket">
       <div class="band"><span>★ ADMIT ONE</span><span>2027 ★</span></div>
@@ -419,6 +429,7 @@ h2{font-size:30px;transform:rotate(2deg)}
 <div id="cardModal" class="pos-a">
   <div id="cmGlow"></div>
   <button class="cm-x" id="cardClose">✕</button>
+  <button class="cm-save" id="cSave">💾 저장</button>
   <div class="cm-card m-gold2 fx-foil fx-frame fx-gloss" id="cmCard">
     <div class="cm-face cm-front" id="cmFront">
       <div class="poster on-card">
@@ -440,6 +451,7 @@ h2{font-size:30px;transform:rotate(2deg)}
   <div class="cm-hint" id="cmHint">👆 카드 눌러서 뒤집기</div>
 </div>
 <div id="flash"></div>
+<div id="saveOv"><button class="sv-x" id="svX">✕</button><div class="sv-t" id="svT"></div><button class="sv-share" id="svShare">📥 사진에 저장</button><div id="svImgs" style="display:flex;flex-direction:column;gap:16px;align-items:center"></div></div>
 <div id="blackout"></div>
 <div id="warm" aria-hidden="true" style="position:fixed;left:0;top:0;opacity:.01;pointer-events:none;font-size:100px;line-height:1;white-space:nowrap;z-index:-1">🪐🌕☄️🛰️🚀🌑⭐🛸🌎💫🌟👽🌙☁️🎸🎟✨🎉💜🎶🔬</div>
 
@@ -1228,6 +1240,32 @@ function placeBelow(){
   $("eqv").style.top = (y + 4) + "px"; $("cmHint").style.top = (y + 16) + "px";
 }
 window.addEventListener("resize", placeBelow);
+
+/* ---------- 저장 (미리 만들어 둔 고화질 이미지: save 폴더) ---------- */
+const SAVE_SET = {
+  ticket: [["비바두비_티켓_앞면", "save/ticket_front.jpg"], ["비바두비_티켓_뒷면", "save/ticket_back.jpg"]],
+  card:   [["비바두비_카드_앞면", "save/card_front.png"], ["비바두비_카드_뒷면_1", "save/card_back_1.png"], ["비바두비_카드_뒷면_2", "save/card_back_2.png"]]
+};
+async function openSave(kind){
+  audio(); ding();
+  const list = SAVE_SET[kind];
+  $("svImgs").innerHTML = list.map(([n, u]) => `<img src="${u}" alt="${n}">`).join("");
+  $("svT").innerHTML = "사진을 꾹 눌러서 저장하세요";
+  $("svShare").style.display = "none";
+  $("saveOv").classList.add("on"); $("saveOv").scrollTop = 0;
+  try{
+    const files = await Promise.all(list.map(async ([n, u]) => { const bl = await (await fetch(u)).blob(); const ext = u.split(".").pop();
+      return new File([bl], n + "." + ext, { type: ext === "png" ? "image/png" : "image/jpeg" }); }));
+    if(navigator.canShare && navigator.canShare({ files })){
+      $("svShare").style.display = "";
+      $("svT").innerHTML = "버튼을 누르고 [이미지 저장]을 고르거나<br>사진을 꾹 눌러서 저장하세요";
+      $("svShare").onclick = () => navigator.share({ files }).catch(() => {});
+    }
+  }catch(e){}
+}
+$("tSave").onclick = e => { e.stopPropagation(); openSave("ticket"); };
+$("cSave").onclick = e => { e.stopPropagation(); openSave("card"); };
+$("svX").onclick = () => $("saveOv").classList.remove("on");
 /* $("cardModal").classList.toggle("pos-a", p === "a"); placeBelow(); document.querySelectorAll("#pv [data-p]").forEach(b => b.classList.toggle("sel", b.dataset.p === p)); };
 document.querySelectorAll("#pv [data-p]").forEach(b => b.onclick = () => setPos(b.dataset.p)); setPos("a");
 $("pvO").onclick = () => { audio(); fillTicket(); show("s-ticket"); $("tTitle").style.visibility = "visible"; $("cardBtn").click(); requestAnimationFrame(placeBelow); };
