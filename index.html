@@ -840,6 +840,9 @@ async function heaven(fromY){
   Object.assign(gb.style, { left: T.left + "px", top: T.top + "px", width: T.width + "px", height: T.height + "px" });
   Object.assign(gs.style, { left: (N.left - T.left - 4) + "px", top: (N.top - T.top - 4) + "px", width: N.width + "px", height: N.height + "px" });
   gs.textContent = "";
+  // 천국문 숫자를 티켓 숫자와 같은 높이에 맞춤 (티켓 칸은 위에 STANDING No. 글자가 있어서 숫자가 칸 중앙보다 아래에 있음)
+  const SR = $("slot").getBoundingClientRect(), numCY = SR.top + SR.height/2, dy0 = numCY - (N.top + N.height/2);
+  gs.style.paddingTop = Math.max(0, dy0*2).toFixed(1) + "px";
   const cx = T.left + T.width/2, cy = T.top + T.height/2;
   $("rays").style.left = cx + "px"; $("rays").style.top = cy + "px";
   $("hglow").style.background = `radial-gradient(circle at ${cx}px ${cy}px,#fff 0%,rgba(255,255,255,.9) 25%,rgba(255,255,255,0) 65%)`;
@@ -891,7 +894,7 @@ async function heaven(fromY){
   await wait(1100);
 
   // 숫자가 문 안의 번호 자리로 날아가 박힘
-  const nx = N.left + N.width/2 - innerWidth/2, ny = N.top + N.height/2 - innerHeight/2;
+  const nx = N.left + N.width/2 - innerWidth/2, ny = numCY - innerHeight/2;
   const fit = Math.min(1, N.width * .85 / num.offsetWidth);
   numAnim([
     { transform: `translate(0,${fromY}px) scale(1) rotate(1080deg)` },
