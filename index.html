@@ -71,8 +71,8 @@ h2{font-size:30px;transform:rotate(2deg)}
 .bh{position:absolute;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;
   background:radial-gradient(circle,#000 30%,rgba(0,0,0,0) 32%),conic-gradient(var(--p),var(--c),var(--y),#7a00ff,var(--p));opacity:0}
 /* 천국의 문 */
-#heaven{position:fixed;inset:0;z-index:59;display:none;opacity:0;overflow:hidden;
-  background:radial-gradient(circle at 50% 50%,#fffbe6 0%,#ffe9a8 32%,#d9b8ff 70%,#7a5cff 100%)}
+#heaven{position:fixed;inset:0;z-index:59;display:none;opacity:0;overflow:hidden}
+.hbg{position:absolute;inset:0;opacity:0;background:radial-gradient(circle at 50% 50%,#fffbe6 0%,#ffe9a8 32%,#d9b8ff 70%,#7a5cff 100%)}
 #heaven.on{display:block}
 .rays{position:absolute;width:1800px;height:1800px;margin:-900px 0 0 -900px;border-radius:50%;opacity:0;
   background:repeating-conic-gradient(rgba(255,255,255,.85) 0 5deg,rgba(255,255,255,0) 5deg 15deg)}
@@ -286,6 +286,12 @@ h2{font-size:30px;transform:rotate(2deg)}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 .cm-hint{font-size:15px;background:#fff;color:#111;padding:5px 12px;animation:blink2 1s ease-in-out infinite}
 .conf{position:fixed;top:-20px;z-index:72;pointer-events:none;font-size:22px}
+.gstamp{position:absolute;left:50%;top:24%;z-index:5;white-space:nowrap;border:6px solid var(--r);color:var(--r);background:rgba(255,255,255,.35);font-family:'Black Han Sans',sans-serif;font-size:40px;line-height:1.1;padding:4px 16px;border-radius:8px;transform:translate(-50%,-50%) rotate(-12deg);opacity:0;pointer-events:none}
+#blackout{position:fixed;inset:0;z-index:66;background:#000;opacity:0;display:none;pointer-events:none}
+#blackout.on{display:block}
+#cmGlow{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 42%,rgba(255,43,214,.6),rgba(255,140,40,.28) 35%,transparent 68%)}
+.burst{position:fixed;left:0;top:0;z-index:85;pointer-events:none;color:#fff;text-shadow:0 0 8px #fff,0 0 16px #ff2bd6;line-height:1}
+
 </style>
 </head>
 <body>
@@ -384,18 +390,20 @@ h2{font-size:30px;transform:rotate(2deg)}
 <div id="lensWrap"><div class="glass"><canvas id="lensCv"></canvas></div><div class="handle"></div><div class="tag">🔬</div></div>
 <div id="space"><canvas id="stars"></canvas><div id="objs"></div></div>
 <div id="heaven">
+  <div class="hbg" id="hbg"></div>
   <div class="rays" id="rays"></div>
   <div class="hglow" id="hglow"></div>
   <div class="gate-box" id="gateBox">
     <div class="gsign">천국 (입장 무료)</div>
     <div class="knock" id="knock">👆 눌러서 입장</div>
-    <div class="gate" id="gate"><div class="gslot" id="gslot"></div><div class="door l" id="doorL"></div><div class="door r" id="doorR"></div></div>
+    <div class="gstamp" id="gstamp">입장 확정</div><div class="gate" id="gate"><div class="gslot" id="gslot"></div><div class="door l" id="doorL"></div><div class="door r" id="doorR"></div></div>
   </div>
   <div class="clouds" id="clouds">☁️☁️☁️☁️☁️☁️</div>
 </div>
 <div id="fly"><span id="flyNum"></span></div>
 
 <div id="cardModal">
+  <div id="cmGlow"></div>
   <button class="cm-x" id="cardClose">✕</button>
   <div class="cm-card" id="cmCard">
     <div class="cm-face cm-front" id="cmFront">
@@ -417,6 +425,7 @@ h2{font-size:30px;transform:rotate(2deg)}
   <div class="cm-hint" id="cmHint">👆 카드 눌러서 뒤집기</div>
 </div>
 <div id="flash"></div>
+<div id="blackout"></div>
 <div id="warm" aria-hidden="true" style="position:fixed;left:0;top:0;opacity:.01;pointer-events:none;font-size:100px;line-height:1;white-space:nowrap;z-index:-1">🪐🌕☄️🛰️🚀🌑⭐🛸🌎💫🌟👽🌙☁️🎸🎟✨🎉💜🎶🔬</div>
 
 <script>
@@ -809,17 +818,32 @@ async function heaven(fromY){
   $("hglow").style.background = `radial-gradient(circle at ${cx}px ${cy}px,#fff 0%,rgba(255,255,255,.9) 25%,rgba(255,255,255,0) 65%)`;
   $("clouds").style.left = cx + "px"; $("clouds").style.top = (T.bottom - 40) + "px";
 
-  // 천국 등장
-  hv.classList.add("on");
-  hv.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, fill: "forwards" });
-  gb.animate([{ transform: "translateY(80px) scale(.3)", opacity: 0 }, { transform: "translateY(0) scale(1)", opacity: 1 }],
-             { duration: 1000, easing: "cubic-bezier(.2,1.2,.5,1)", fill: "forwards" });
-  choir();
+  // 우주 저 끝(가운데 소실점)에서 천국문이 점점 다가옴
+  const hbg = $("hbg"), cl = $("clouds");
+  [hv, hbg, cl, gb].forEach(e => e.getAnimations().forEach(a => a.cancel()));
+  hbg.style.opacity = 0; cl.style.opacity = 0;
+  hv.classList.add("on"); hv.style.opacity = 1;
   numAnim([
     { transform: `translate(0,${fromY}px) scale(1) rotate(1080deg)` },
     { transform: `translate(0,${fromY + 8}px) scale(1.05) rotate(1080deg)` }
   ], { duration: 500, iterations: Infinity, direction: "alternate", easing: "ease-in-out" });
-  setTimeout(() => { starsOn = false; $("space").classList.remove("on"); $("objs").innerHTML = ""; }, 1000);
+  const dx = innerWidth/2 - cx, dy = innerHeight/2 - cy, D = 40, APPROACH = 3200;
+  const kf = [];
+  for(let i = 0; i <= 24; i++){
+    const t = i/24, e = 1 - Math.pow(1 - t, 2), z = 1 / (D - (D - 1) * e);
+    kf.push({ transform: `translate(${(dx*(1 - z)).toFixed(1)}px,${(dy*(1 - z)).toFixed(1)}px) scale(${z.toFixed(4)})`, opacity: Math.min(1, t*8) });
+  }
+  gb.animate(kf, { duration: APPROACH, easing: "linear", fill: "forwards" });
+  warp = 2.2;
+  sweep(80, 700, APPROACH/1000, "sine", .07);
+  await wait(APPROACH);
+
+  // 도착: 천국이 펼쳐짐
+  warp = .3; choir();
+  tone(60, .4, "sine", .22);
+  hbg.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, fill: "forwards" });
+  cl.animate([{ opacity: 0, transform: "translateX(-50%) translateY(40px)" }, { opacity: 1, transform: "translateX(-50%) translateY(0)" }], { duration: 900, easing: "ease-out", fill: "forwards" });
+  setTimeout(() => { starsOn = false; $("space").classList.remove("on"); $("objs").innerHTML = ""; }, 900);
   await wait(1000);
 
   // 문을 눌러야 들어감
@@ -834,7 +858,7 @@ async function heaven(fromY){
   $("doorL").animate([{ transform: "rotateY(0)" }, { transform: "rotateY(-105deg)" }], { duration: 900, easing: "ease-in-out", fill: "forwards" });
   $("doorR").animate([{ transform: "rotateY(0)" }, { transform: "rotateY(105deg)" }], { duration: 900, easing: "ease-in-out", fill: "forwards" });
   $("rays").animate([{ opacity: 0, transform: "scale(.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: 1600, fill: "forwards" });
-  $("rays").animate([{ rotate: "0deg" }, { rotate: "360deg" }], { duration: 9000, iterations: Infinity });
+  const raysSpin = $("rays").animate([{ rotate: "0deg" }, { rotate: "360deg" }], { duration: 9000, iterations: Infinity });
   $("hglow").animate([{ opacity: 0 }, { opacity: .85 }], { duration: 1400, fill: "forwards" });
   sweep(300, 1500, 1.4, "sine", .07);
   await wait(1100);
@@ -854,16 +878,53 @@ async function heaven(fromY){
   gb.animate([{ transform: "translate(0,0)" }, { transform: "translate(-8px,5px)" }, { transform: "translate(7px,-6px)" }, { transform: "translate(-4px,3px)" }, { transform: "translate(0,0)" }], { duration: 350 });
   $("hglow").animate([{ opacity: .85 }, { opacity: 1 }, { opacity: .85 }], { duration: 600 });
   tone(2200, .08, "square", .12); boom();
-  await wait(1400);
+  await wait(500);
 
-  // 불이 꺼지면서 문이 티켓이 됨
-  sweep(700, 40, 1.4, "sine", .1);
-  [0, .14, .24, .3, .42].forEach(t => tone(140, .04, "square", .1, t * 1.7));
-  hv.animate([
-    { opacity: 1 }, { opacity: .3, offset: .08 }, { opacity: 1, offset: .14 }, { opacity: .2, offset: .24 },
-    { opacity: .95, offset: .3 }, { opacity: .15, offset: .42 }, { opacity: 0 }
-  ], { duration: 1700, fill: "forwards" });
-  await wait(1700);
+  // 번호 두근두근: 금빛 맥박 2번 + 빛줄기 빨라짐
+  raysSpin.updatePlaybackRate(4);
+  for(let i = 0; i < 2; i++){
+    gs.animate([
+      { transform: "scale(1)", color: "#8a6400", textShadow: "0 0 14px #fff,0 0 30px #ffd84a" },
+      { transform: "scale(1.4)", color: "#ffae00", textShadow: "0 0 20px #fff,0 0 50px #ffd84a,0 0 90px #ffae00", offset: .3 },
+      { transform: "scale(1)", color: "#8a6400", textShadow: "0 0 14px #fff,0 0 30px #ffd84a" }
+    ], { duration: 520, easing: "ease-out" });
+    tone(70, .28, "sine", .35); tone(140, .12, "triangle", .12);
+    $("hglow").animate([{ opacity: .85 }, { opacity: 1 }, { opacity: .85 }], { duration: 520 });
+    await wait(640);
+  }
+  await wait(150);
+
+  // 입장 확정 도장 쾅
+  $("gstamp").style.opacity = "";
+  $("gstamp").animate([
+    { transform: "translate(-50%,-50%) rotate(-12deg) scale(3.2)", opacity: 0 },
+    { transform: "translate(-50%,-50%) rotate(-12deg) scale(1)", opacity: .92 }
+  ], { duration: 240, easing: "cubic-bezier(.6,0,.9,1)", fill: "forwards" });
+  await wait(230);
+  tone(90, .25, "square", .25); boom();
+  gb.animate([{ transform: "translate(0,0)" }, { transform: "translate(-12px,8px)" }, { transform: "translate(10px,-9px)" }, { transform: "translate(-7px,5px)" }, { transform: "translate(4px,-3px)" }, { transform: "translate(0,0)" }], { duration: 420 });
+  await wait(800);
+
+  // 사방의 빛줄기가 문으로 모이며 화아악 밝아짐
+  raysSpin.updatePlaybackRate(10);
+  sweep(200, 2400, 1.1, "sine", .1);
+  [784, 1047, 1319].forEach((f, k) => pad(f, 1.6, .04, k*.08));
+  $("rays").animate([{ transform: "scale(1)", opacity: 1 }, { transform: "scale(.1)", opacity: 1 }], { duration: 1100, easing: "cubic-bezier(.6,0,.9,.6)", fill: "forwards" });
+  $("hglow").animate([{ opacity: .85 }, { opacity: 1 }], { duration: 1100, fill: "forwards" });
+  gb.animate([{ filter: "brightness(1)" }, { filter: "brightness(3.2)" }], { duration: 1100, easing: "ease-in", fill: "forwards" });
+  // 도장은 밝아지는 동안 점점 옅어져서, 화면이 완전히 새하얘지는 순간(1.35초 뒤) 딱 사라짐
+  $("gstamp").animate([{ opacity: .92 }, { opacity: 0 }], { duration: 1350, easing: "ease-in", fill: "forwards", composite: "replace" });
+  await wait(1050);
+  // 새하얗게 0.3초 만에 차오르고 0.5초 유지
+  $("flash").animate([{ opacity: 0 }, { opacity: 1, offset: .09 }, { opacity: 1, offset: .24 }, { opacity: 0 }], { duration: 3300, easing: "ease-in-out" });
+  tone(1600, .9, "sine", .12); tone(60, .5, "sine", .25); pad(523, 3, .05); pad(784, 3, .04, .1);
+  await wait(800);
+
+  // 빛이 2.5초 동안 천천히 걷히며 문이 그 자리에서 티켓이 됨
+  hv.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 2500, easing: "ease-in-out", fill: "forwards" });
+  gb.animate([{ filter: "brightness(3.2)" }, { filter: "brightness(1)" }], { duration: 2500, fill: "forwards" });
+  sweep(900, 80, 2.4, "sine", .06);
+  await wait(2500);
   hv.classList.remove("on");
 
   // 마무리
@@ -974,7 +1035,7 @@ setInterval(() => { const d = new Date(2027, 2, 22, 23, 58, 41 + Math.floor(perf
 
 /* ---------- 카드 뒷면: 곡 + 이퀄라이저 + 몽환→터짐→역빌드업 ---------- */
 // 곡 파일 = 원곡 2:22.0 ~ 끝 (song.mp3)
-const T_DROP = 29.0, T_REW0 = 58.0, T_REW1 = 65.0, FADE = 4, SONG_GAIN = 0.224;
+const T_DROP = 29.0, T_REW0 = 58.0, T_REW1 = 65.0, FADE = 4, SONG_GAIN = 0.157;
 const eqv = $("eqv"), eqL = [...eqv.children], eqLv = eqL.map(() => .3);
 const back = $("cmBack"), card = $("cmCard");
 const bPh = back.querySelector(".gb-ph"), bM = back.querySelector(".gb-ph .m"), bSil = back.querySelector(".gb-ph .sil");
@@ -982,6 +1043,29 @@ const bRB = back.querySelectorAll(".gb-ph .r,.gb-ph .b"), bScan = back.querySele
 let songBuf = null, songLoading = null, songSrc = null, songAn = null, songGain = null, songStart = 0, songOn = false, eqOn = false, lastPh = "dream";
 const fbuf = new Uint8Array(1024), edges = [...Array(12)].map((_, i) => Math.round(2*Math.pow(190, i/11)));
 const pk = eqL.map(() => 1), fl = eqL.map(() => 255); let kickAvg = 0;
+const FX = { boom: true, punch: true, glow: true, neon: true, spark: true };
+let punchV = 0, rgbV = 0, neonV = 0, lastKickT = 0, SONG_OFF = 0;
+const cmGlow = $("cmGlow");
+function burst(n, big){
+  const r = card.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
+  for(let i = 0; i < n; i++){
+    const s = document.createElement("span"); s.className = "burst"; s.textContent = pick(["✦","✧","★","♪","✦"]);
+    const a = Math.random()*TAU;
+    const x0 = big ? cx : cx + Math.cos(a)*r.width*.52, y0 = big ? cy : cy + Math.sin(a)*r.height*.52;
+    const d = big ? rnd(140, 320) : rnd(40, 100);
+    s.style.fontSize = (big ? rnd(16, 34) : rnd(10, 18)) + "px";
+    document.body.appendChild(s);
+    s.animate([
+      { transform: `translate(${x0}px,${y0}px) scale(.3)`, opacity: 1 },
+      { transform: `translate(${x0 + Math.cos(a)*d}px,${y0 + Math.sin(a)*d}px) scale(1) rotate(${rnd(-180,180)}deg)`, opacity: 0 }
+    ], { duration: big ? rnd(1400, 2600) : rnd(800, 1400), easing: "cubic-bezier(.2,.8,.4,1)", fill: "forwards" }).onfinish = () => s.remove();
+  }
+}
+function resetFx(){
+  punchV = rgbV = neonV = 0;
+  card.style.scale = ""; card.style.boxShadow = ""; bPh.style.transform = ""; cmGlow.style.opacity = 0;
+  bRB.forEach(e => e.style.translate = "");
+}
 function loadSong(){
   if(songLoading) return songLoading;
   audio();
@@ -1007,11 +1091,33 @@ function eqFrame(){
   const t = songOn ? ac.currentTime - songStart : 0;
   const [ph, P] = phaseAt(t);
   applyBack(P);
-  if(ph === "drop" && lastPh !== "drop"){ bFlash.animate([{ opacity: .9 }, { opacity: 0 }], { duration: 450 }); card.animate([{ transform: "scale(1.05)" }, { transform: "scale(1)" }], { duration: 300 }); }
+  if(ph === "drop" && lastPh !== "drop"){
+    if(FX.boom){
+      bFlash.animate([{ opacity: 1, background: "#fff" }, { opacity: .85, background: "#ff2bd6", offset: .15 }, { opacity: .7, background: "#00e5ff", offset: .3 }, { opacity: .5, background: "#fff", offset: .45 }, { opacity: 0, background: "#fff" }], { duration: 700 });
+      card.animate([{ translate: "0 0" }, { translate: "-14px 8px" }, { translate: "12px -10px" }, { translate: "-9px 6px" }, { translate: "7px -4px" }, { translate: "-3px 2px" }, { translate: "0 0" }], { duration: 550 });
+      rgbV = 1;
+    } else bFlash.animate([{ opacity: .9 }, { opacity: 0 }], { duration: 450 });
+    if(FX.spark){ burst(90, true); setTimeout(() => burst(60, true), 180); }
+  }
   lastPh = ph;
   let kick = 0;
   if(songOn){ songAn.getByteFrequencyData(fbuf); const low = (fbuf[1] + fbuf[2] + fbuf[3] + fbuf[4])/4/255; kick = Math.max(0, low - kickAvg)*4; kickAvg += (low - kickAvg)*.08; }
   const k = Math.min(1, kick), amt = .1 + .9*P;
+  const nowMs = performance.now();
+  if(ph !== "dream" && k > .35 && nowMs - lastKickT > 140){
+    lastKickT = nowMs;
+    if(FX.punch) punchV = 1;
+    if(FX.neon) neonV = 1;
+    if(FX.spark && P > .5) burst(20, false);
+  }
+  punchV *= .86; rgbV *= .94; neonV *= .88;
+  card.style.scale = FX.punch && P > 0 ? (1 + .035*punchV*P).toFixed(4) : "";
+  bPh.style.transform = FX.punch && P > 0 ? `scale(${(1 + .05*punchV*P).toFixed(4)})` : "";
+  const off = (FX.boom ? rgbV*16 : 0) + (FX.punch ? punchV*4*P : 0);
+  bRB.forEach((e, i) => e.style.translate = off > .2 ? `${(i ? off : -off).toFixed(1)}px 0` : "");
+  const bass = (eqLv[0] + eqLv[1] + eqLv[2]) / 3;
+  cmGlow.style.opacity = FX.glow ? (P * Math.min(1, .15 + bass*1.1)).toFixed(3) : 0;
+  card.style.boxShadow = FX.neon && P > 0 ? `0 0 0 3px #111,8px 8px 0 #000,0 0 ${(12 + 40*neonV).toFixed(0)}px ${(2 + 10*neonV).toFixed(0)}px rgba(255,43,214,${((.25 + .75*neonV)*P).toFixed(3)})` : "";
   eqL.forEach((e, i) => { let v = 0;
     if(songOn){ let sm = 0, c = 0; for(let j = edges[i]; j <= edges[i+1]; j++){ sm += fbuf[j]; c++; } const raw = sm/c;
       pk[i] = Math.max(raw, pk[i]*.997); fl[i] = Math.min(raw, fl[i] + (raw - fl[i])*.01); v = Math.pow(Math.max(0, (raw - fl[i]*.85)/(pk[i] - fl[i]*.85 + 1)), 1.3); }
@@ -1032,15 +1138,15 @@ async function startSong(){
   songAn = ac.createAnalyser(); songAn.fftSize = 2048; songAn.smoothingTimeConstant = .55;
   songGain = ac.createGain(); songAn.connect(songGain); songGain.connect(ac.destination);
   songSrc = ac.createBufferSource(); songSrc.buffer = b; songSrc.connect(songAn);
-  const now = ac.currentTime, end = now + b.duration;
-  songGain.gain.setValueAtTime(.0001, now); songGain.gain.linearRampToValueAtTime(SONG_GAIN, now + FADE);
+  const now = ac.currentTime, end = now + b.duration - SONG_OFF;
+  songGain.gain.setValueAtTime(.0001, now); songGain.gain.linearRampToValueAtTime(SONG_GAIN, now + (SONG_OFF ? 1 : FADE));
   songGain.gain.setValueAtTime(SONG_GAIN, end - FADE); songGain.gain.linearRampToValueAtTime(.0001, end);
-  songSrc.start(now); songStart = now; songOn = true;
+  songSrc.start(now, SONG_OFF); songStart = now - SONG_OFF; songOn = true;
   songSrc.onended = () => { if(songSrc && songSrc.buffer === b && ac.currentTime - songStart >= b.duration - .1) songOn = false; };
 }
 function setEq(on){
   eqOn = on; eqv.classList.toggle("on", on);
-  stopSong(); lastPh = "dream"; eqLv.fill(.3); applyBack(0);
+  stopSong(); lastPh = "dream"; eqLv.fill(.3); applyBack(0); resetFx();
   if(on){ requestAnimationFrame(eqFrame); startSong(); }
   else card.style.setProperty("--holo", ".4");
 }
