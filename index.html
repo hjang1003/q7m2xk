@@ -169,18 +169,26 @@ h2{font-size:30px;transform:rotate(2deg)}
 .cm-x{position:absolute;top:44px;right:16px;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:var(--k);color:#fff;font-size:20px;cursor:pointer}
 .cm-card{position:relative;width:min(340px,86vw);cursor:pointer}
 .cm-face{width:100%}
-.cm-back{position:absolute;inset:0;visibility:hidden;display:flex;flex-direction:column;align-items:center;background:linear-gradient(#0b1440,#26145a 70%,#3a1b5e);border:5px solid var(--k);box-shadow:8px 8px 0 #000;padding:14px 10px 12px;overflow:hidden;text-align:center}
-.poster.on-card{display:block;margin:0}
-.tb-top{font-family:'Black Han Sans',sans-serif;font-size:34px;color:#ffe600;-webkit-text-stroke:2px #111;text-shadow:3px 3px 0 #e3001b;line-height:1}
-.tb-sub{font-family:'Black Han Sans',sans-serif;font-size:19px;color:#fff;margin-top:6px}
-.tb-scene{position:relative;flex:1;width:100%;min-height:0}
-.thief-svg{position:absolute;left:-9%;bottom:0;width:100%;height:100%}
-.tb-plane{position:absolute;left:8%;top:6%;font-size:34px;transform:rotate(-12deg)}
-.tb-moon{position:absolute;right:10%;top:2%;font-size:30px}
-.tb-sign{position:absolute;right:2%;top:30%;z-index:2;background:#0a7d3e;border:3px solid #fff;box-shadow:0 0 0 2px #0a7d3e;color:#fff;padding:4px 8px;line-height:1.15;transform:rotate(4deg)}
-.tb-sign b{display:block;font-family:'Black Han Sans',sans-serif;font-size:15px;letter-spacing:1px}
-.tb-sign span{font-size:10px}
-.tb-foot{display:inline-block;font-family:'Black Han Sans',sans-serif;font-size:17px;background:#ffe600;color:#111;padding:3px 10px;transform:rotate(-2deg)}
+.cm-back{position:absolute;inset:0;visibility:hidden;display:flex;flex-direction:column;align-items:center;padding:14px 12px;text-align:center;
+  background:#f1dfb4;color:#3a2410;background-image:radial-gradient(rgba(90,50,10,.12) 1px,transparent 1px);background-size:5px 5px}
+.poster.on-card{display:block;margin:0;border:0;box-shadow:none}
+.wb-t{font-family:'Black Han Sans',sans-serif;font-size:58px;letter-spacing:4px;line-height:1}
+.wb-s{font-family:'Black Han Sans',sans-serif;font-size:21px;border-top:3px solid #3a2410;border-bottom:3px solid #3a2410;padding:2px 14px;margin-top:4px}
+.wb-scene{position:relative;flex:1;width:100%;margin:8px 0;border:4px solid #3a2410;background:#e6cf9c;min-height:0}
+.wb-scene{overflow:hidden}
+.wb-scene svg{position:absolute;left:-9%;bottom:0;width:100%;height:100%}
+.wb-r{font-family:'Black Han Sans',sans-serif;font-size:14px;line-height:1.3}
+.wb-r b{display:block;font-size:24px;color:#a3150f}
+/* 반짝이 카드 */
+.cm-card{border-radius:14px;overflow:hidden;border:8px solid #e8c34a;box-shadow:0 0 0 3px #111,8px 8px 0 #000;transition:transform .15s}
+.cm-card:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:9;mix-blend-mode:color-dodge;opacity:.7;
+  background:repeating-linear-gradient(115deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 10%,rgba(255,60,172,.45) 13%,rgba(255,220,60,.45) 15%,rgba(60,255,160,.45) 17%,rgba(60,200,255,.45) 19%,rgba(180,60,255,.45) 21%,rgba(255,255,255,0) 24%,rgba(255,255,255,0) 34%);
+  background-size:300% 300%;background-position:var(--hx,0%) var(--hy,0%);animation:holo 6s linear infinite}
+.cm-card:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:10;opacity:.6;mix-blend-mode:overlay;
+  background:radial-gradient(circle at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.9),rgba(255,255,255,0) 45%)}
+@keyframes holo{to{background-position:300% 300%}}
+.spark{position:absolute;z-index:11;pointer-events:none;color:#fff;text-shadow:0 0 6px #fff,0 0 12px #fff;animation:tw 1.6s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 .cm-hint{font-size:15px;background:#fff;color:#111;padding:5px 12px;animation:blink2 1s ease-in-out infinite}
 .conf{position:fixed;top:-20px;z-index:72;pointer-events:none;font-size:22px}
 </style>
@@ -304,13 +312,9 @@ h2{font-size:30px;transform:rotate(2deg)}
     </div>
     </div>
     <div class="cm-face cm-back" id="cmBack">
-      <div class="tb-top">⚠ 포착 ⚠</div>
-      <div class="tb-sub">날강두비, 한국에 몰래 입국 중</div>
-      <div class="tb-scene">
-        <div class="tb-plane">✈️</div>
-        <div class="tb-moon">🌙</div>
-        <div class="tb-sign"><b>INCHEON</b><span>인천공항 입국장 ↑</span></div>
-        <svg viewBox="0 0 360 400" class="thief-svg" xmlns="http://www.w3.org/2000/svg">
+      <div class="wb-t">WANTED</div>
+      <div class="wb-s">날강두비 · 상습 고막 털이범</div>
+      <div class="wb-scene"><svg viewBox="0 0 360 400" class="thief-svg" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <pattern id="stripe" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
       <rect width="16" height="8" fill="#111"/><rect y="8" width="16" height="8" fill="#f2f2f2"/></pattern>
@@ -350,9 +354,8 @@ h2{font-size:30px;transform:rotate(2deg)}
   <rect x="136" y="68" width="116" height="16" rx="7" fill="#111"/>
   <circle cx="194" cy="14" r="10" fill="#e3001b" stroke="#111" stroke-width="4"/>
   <text x="300" y="360" font-family="Black Han Sans, sans-serif" font-size="22" fill="#ffe600" stroke="#111" stroke-width="1" text-anchor="middle" transform="rotate(-8 300 360)">살금살금</text>
-</svg>
-      </div>
-      <div class="tb-foot">2027.03.23 올림픽홀 출몰 예정</div>
+</svg></div>
+      <div class="wb-r">현상금<b>올림픽홀 스탠딩 1매</b>2027.03.23 출몰 예정 · 발견 즉시 떼창할 것</div>
     </div>
   </div>
   <div class="cm-hint" id="cmHint">👆 카드 눌러서 뒤집기</div>
@@ -872,6 +875,21 @@ $("flip").onclick = () => {
 
 
 /* ---------- 내한 기념 카드 ---------- */
+(() => {
+  const c = $("cmCard");
+  for(let i = 0; i < 7; i++){ const sp = document.createElement("span"); sp.className = "spark"; sp.textContent = "✦";
+    sp.style.left = (Math.random()*90+3) + "%"; sp.style.top = (Math.random()*90+3) + "%"; sp.style.fontSize = (10+Math.random()*12) + "px";
+    sp.style.animationDelay = (Math.random()*1.6) + "s"; c.appendChild(sp); }
+  const setLight = (px, py) => { c.style.setProperty("--gx", px*100 + "%"); c.style.setProperty("--gy", py*100 + "%");
+    c.style.setProperty("--hx", px*300 + "%"); c.style.setProperty("--hy", py*300 + "%"); };
+  const mv = (x, y) => { const r = c.getBoundingClientRect(); const px = (x - r.left)/r.width, py = (y - r.top)/r.height;
+    setLight(px, py); c.style.transform = `perspective(700px) rotateY(${(px-.5)*14}deg) rotateX(${(.5-py)*14}deg)`; };
+  c.addEventListener("pointermove", e => mv(e.clientX, e.clientY));
+  c.addEventListener("touchmove", e => { const t = e.touches[0]; mv(t.clientX, t.clientY); }, { passive: true });
+  const rs = () => { c.style.transform = ""; }; c.addEventListener("pointerleave", rs); c.addEventListener("touchend", rs);
+  window.addEventListener("deviceorientation", e => { if(e.gamma == null) return;
+    setLight(Math.min(1, Math.max(0, .5 + e.gamma/60)), Math.min(1, Math.max(0, .5 + (e.beta-45)/60))); });
+})();
 let cmBusy = false, cmBack = false;
 $("cardBtn").onclick = (e) => {
   e.stopPropagation(); audio(); ding();
