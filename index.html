@@ -542,9 +542,7 @@ if(document.fonts) document.fonts.ready.then(setupTicker);
 
 /* ---------- 사운드 ---------- */
 let ac;
-// 아이폰은 무음(벨소리 끔) 모드면 웹 소리를 꺼버림 → "음악 재생용" 소리로 지정해서 무음 모드에서도 나오게 (iOS 17 이상)
-function audio(){ try{ if(navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; }catch(e){}
-  if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac && ac.state === "suspended") ac.resume(); }
+function audio(){ if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac && ac.state === "suspended") ac.resume(); }
 function tone(f, d, type="square", vol=.08, when=0){
   if(!ac) return;
   const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
