@@ -255,12 +255,14 @@ h2{font-size:30px;transform:rotate(2deg)}
 @keyframes gb_pulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
 /* 반짝이 카드 */
 .cm-card{border-radius:14px;overflow:hidden;border:8px solid #e8c34a;box-shadow:0 0 0 3px #111,8px 8px 0 #000;transition:transform .15s}
-.cm-card:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:9;mix-blend-mode:color-dodge;opacity:.7;
-  background:repeating-linear-gradient(115deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 10%,rgba(255,60,172,.45) 13%,rgba(255,220,60,.45) 15%,rgba(60,255,160,.45) 17%,rgba(60,200,255,.45) 19%,rgba(180,60,255,.45) 21%,rgba(255,255,255,0) 24%,rgba(255,255,255,0) 34%);
-  background-size:300% 300%;background-position:var(--hx,0%) var(--hy,0%);animation:holo 6s linear infinite}
+.cm-card:after{content:"";position:absolute;inset:-60%;pointer-events:none;z-index:9;mix-blend-mode:color-dodge;opacity:.7;
+  background:linear-gradient(115deg,rgba(255,255,255,0) 40%,rgba(255,60,172,.45) 45%,rgba(255,220,60,.45) 47.5%,rgba(60,255,160,.45) 50%,rgba(60,200,255,.45) 52.5%,rgba(180,60,255,.45) 55%,rgba(255,255,255,0) 60%);
+  animation:holoSweep 5s linear infinite}
+@keyframes holoSweep{from{transform:translate(-45%,-20%)}to{transform:translate(45%,20%)}}
 .cm-card:before{content:"";position:absolute;inset:0;pointer-events:none;z-index:10;opacity:.6;mix-blend-mode:overlay;
   background:radial-gradient(circle at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.9),rgba(255,255,255,0) 45%)}
 @keyframes holo{to{background-position:300% 300%}}
+.cm-card.back-on .spark{display:none}
 .spark{position:absolute;z-index:11;pointer-events:none;color:#fff;text-shadow:0 0 6px #fff,0 0 12px #fff;animation:tw 1.6s ease-in-out infinite}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 .cm-hint{font-size:15px;background:#fff;color:#111;padding:5px 12px;animation:blink2 1s ease-in-out infinite}
@@ -927,7 +929,7 @@ $("flip").onclick = () => {
 let cmBusy = false, cmBack = false;
 $("cardBtn").onclick = (e) => {
   e.stopPropagation(); audio(); ding();
-  cmBack = false; $("cmFront").style.visibility = "visible"; $("cmBack").style.visibility = "hidden";
+  cmBack = false; $("cmFront").style.visibility = "visible"; $("cmBack").style.visibility = "hidden"; $("cmCard").classList.remove("back-on");
   $("cardModal").classList.add("on");
   $("cmCard").animate([{ transform: "scale(.3) rotate(-15deg)", opacity: 0 }, { transform: "scale(1) rotate(0)", opacity: 1 }], { duration: 450, easing: "cubic-bezier(.2,1.4,.5,1)" });
 };
@@ -940,6 +942,7 @@ $("cmCard").onclick = () => {
     cmBack = !cmBack;
     $("cmFront").style.visibility = cmBack ? "hidden" : "visible";
     $("cmBack").style.visibility = cmBack ? "visible" : "hidden";
+    c.classList.toggle("back-on", cmBack);
     c.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1.06)", offset: .7 }, { transform: "scaleX(1)" }], { duration: 260, easing: "ease-out" }).onfinish = () => { cmBusy = false; };
   };
   $("cmHint").style.visibility = "hidden";
