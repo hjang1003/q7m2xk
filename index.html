@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <title>긴급 수령 대상자 통지서</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
 <style>
 :root{--y:#ffe600;--p:#ff2bd6;--c:#00e5ff;--k:#111;--w:#fff;--r:#e3001b;--paper:#fff7e0}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -164,10 +164,10 @@ h2{font-size:30px;transform:rotate(2deg)}
 .cardrow{width:100%;display:flex;justify-content:flex-end;margin:-6px 0 -8px;visibility:hidden}
 .cardrow.on{visibility:visible;animation:pop .4s}
 .cardbtn{font-family:'Black Han Sans',sans-serif;font-size:15px;background:var(--k);color:var(--y);border:3px solid var(--k);box-shadow:4px 4px 0 var(--p);padding:6px 12px;cursor:pointer;animation:blink2 1.2s ease-in-out infinite}
-#cardModal{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(0,0,0,.78);padding:16px}
+#cardModal{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(0,0,0,.93);padding:16px}
 #cardModal.on{display:flex}
-.cm-x{position:absolute;top:44px;right:16px;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:var(--k);color:#fff;font-size:20px;cursor:pointer}
-.cm-card{position:relative;width:min(340px,86vw);cursor:pointer}
+.cm-x{z-index:20;position:absolute;top:44px;right:16px;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:var(--k);color:#fff;font-size:20px;cursor:pointer}
+.cm-card{position:relative;width:min(320px,78vw,52vh);cursor:pointer}
 .cm-face{width:100%}
 .cm-back{position:absolute;inset:0;visibility:hidden;background:#0d120d}
 .poster.on-card{display:block;margin:0;border:0;box-shadow:none}
@@ -253,6 +253,21 @@ h2{font-size:30px;transform:rotate(2deg)}
 #cmBack .gb-flare{position:absolute;z-index:5;right:-6%;top:37%;width:46%;aspect-ratio:1;border-radius:50%;pointer-events:none;mix-blend-mode:screen;
  background:radial-gradient(circle,rgba(255,240,180,.95),rgba(255,170,40,.5) 30%,transparent 65%);animation:gb_pulse 3.2s ease-in-out infinite}
 @keyframes gb_pulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+
+/* 카드 뒷면 이퀄라이저 (녹슨 구리) */
+#eqv{position:relative;width:min(320px,78vw,52vh);height:min(150px,19vh);padding-bottom:34px;display:flex;justify-content:space-between;align-items:flex-end;visibility:hidden;margin-top:-4px}
+#eqv.on{visibility:visible}
+#eqv .L{position:relative;flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+#eqv .lt{position:relative;width:100%;height:34px;transform-origin:50% 100%;
+  transform:scaleY(calc(.45 + var(--v,0)*3)) skewX(calc(var(--k,0)*-9deg)) rotate(calc(var(--k,0)*2deg));filter:drop-shadow(0 0 calc(var(--v,0)*7px) rgba(160,80,40,.5))}
+#eqv .lt span{position:absolute;left:0;right:0;bottom:0;text-align:center;font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-size:32px;line-height:1;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 0.75'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),linear-gradient(to top,#24100a,#5a2814 40%,#9a4a24 80%,#d68a5a);-webkit-background-clip:text;background-clip:text;color:transparent}
+#eqv .s1{clip-path:inset(0 0 66% 0);transform:translateX(calc(var(--k,0)*-7px))}
+#eqv .s2{clip-path:inset(34% 0 33% 0);transform:translateX(calc(var(--k,0)*9px));background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.3' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 0.75'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),linear-gradient(to top,#2a1020,#7a3a6a)!important;-webkit-background-clip:text!important;background-clip:text!important}
+#eqv .s3{clip-path:inset(67% 0 0 0);transform:translateX(calc(var(--k,0)*-4px))}
+#eqv .rf{position:absolute;left:0;right:0;top:100%;margin-top:3px;text-align:center;font-family:'Anton',Impact,'Arial Narrow',sans-serif;font-size:32px;line-height:1;color:#5a2814;
+  transform-origin:50% 0;transform:scaleY(calc(-.4 - var(--v,0)*1.1));opacity:.14;-webkit-mask:linear-gradient(to top,transparent,#000)}
+#eqv:after{content:"";position:absolute;left:0;right:0;bottom:34px;height:1px;background:#5a2814;box-shadow:0 0 6px rgba(160,80,40,.5)}
 /* 반짝이 카드 */
 .cm-card{border-radius:14px;overflow:hidden;border:8px solid #e8c34a;box-shadow:0 0 0 3px #111,8px 8px 0 #000;transition:transform .15s}
 .cm-card:after{content:"";position:absolute;inset:-60%;pointer-events:none;z-index:9;mix-blend-mode:color-dodge;opacity:.7;
@@ -394,6 +409,7 @@ h2{font-size:30px;transform:rotate(2deg)}
     </div>
     </div>
   </div>
+  <div class="eqv" id="eqv"><div class="L"><div class="rf">B</div><div class="lt"><span class="s1">B</span><span class="s2">B</span><span class="s3">B</span></div></div><div class="L"><div class="rf">E</div><div class="lt"><span class="s1">E</span><span class="s2">E</span><span class="s3">E</span></div></div><div class="L"><div class="rf">A</div><div class="lt"><span class="s1">A</span><span class="s2">A</span><span class="s3">A</span></div></div><div class="L"><div class="rf">B</div><div class="lt"><span class="s1">B</span><span class="s2">B</span><span class="s3">B</span></div></div><div class="L"><div class="rf">A</div><div class="lt"><span class="s1">A</span><span class="s2">A</span><span class="s3">A</span></div></div><div class="L"><div class="rf">D</div><div class="lt"><span class="s1">D</span><span class="s2">D</span><span class="s3">D</span></div></div><div class="L"><div class="rf">O</div><div class="lt"><span class="s1">O</span><span class="s2">O</span><span class="s3">O</span></div></div><div class="L"><div class="rf">O</div><div class="lt"><span class="s1">O</span><span class="s2">O</span><span class="s3">O</span></div></div><div class="L"><div class="rf">B</div><div class="lt"><span class="s1">B</span><span class="s2">B</span><span class="s3">B</span></div></div><div class="L"><div class="rf">E</div><div class="lt"><span class="s1">E</span><span class="s2">E</span><span class="s3">E</span></div></div><div class="L"><div class="rf">E</div><div class="lt"><span class="s1">E</span><span class="s2">E</span><span class="s3">E</span></div></div></div>
   <div class="cm-hint" id="cmHint">👆 카드 눌러서 뒤집기</div>
 </div>
 <div id="flash"></div>
@@ -929,11 +945,11 @@ $("flip").onclick = () => {
 let cmBusy = false, cmBack = false;
 $("cardBtn").onclick = (e) => {
   e.stopPropagation(); audio(); ding();
-  cmBack = false; $("cmFront").style.visibility = "visible"; $("cmBack").style.visibility = "hidden"; $("cmCard").classList.remove("back-on");
+  cmBack = false; $("cmFront").style.visibility = "visible"; $("cmBack").style.visibility = "hidden"; $("cmCard").classList.remove("back-on"); setEq(false);
   $("cardModal").classList.add("on");
   $("cmCard").animate([{ transform: "scale(.3) rotate(-15deg)", opacity: 0 }, { transform: "scale(1) rotate(0)", opacity: 1 }], { duration: 450, easing: "cubic-bezier(.2,1.4,.5,1)" });
 };
-$("cardClose").onclick = () => $("cardModal").classList.remove("on");
+$("cardClose").onclick = () => { $("cardModal").classList.remove("on"); setEq(false); };
 $("cmCard").onclick = () => {
   if(cmBusy) return; cmBusy = true; audio();
   sweep(300, 1100, .3, "sine", .06);
@@ -943,6 +959,7 @@ $("cmCard").onclick = () => {
     $("cmFront").style.visibility = cmBack ? "hidden" : "visible";
     $("cmBack").style.visibility = cmBack ? "visible" : "hidden";
     c.classList.toggle("back-on", cmBack);
+    setEq(cmBack);
     c.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1.06)", offset: .7 }, { transform: "scaleX(1)" }], { duration: 260, easing: "ease-out" }).onfinish = () => { cmBusy = false; };
   };
   $("cmHint").style.visibility = "hidden";
@@ -950,6 +967,25 @@ $("cmCard").onclick = () => {
 
 setInterval(() => { const d = new Date(2027, 2, 22, 23, 58, 41 + Math.floor(performance.now()/1000));
   document.querySelectorAll("#cmBack .clk").forEach(e => e.textContent = d.toTimeString().slice(0, 8)); }, 250);
+
+/* ---------- 카드 뒷면 이퀄라이저 ---------- */
+const eqv = $("eqv"), eqL = [...eqv.children], eqLv = eqL.map(() => 0);
+let eqOn = false, eqT0 = 0;
+function eqFrame(now){
+  if(!eqOn) return;
+  const t = (now - eqT0)/1000, bt = 60/200, ph = (t % bt)/bt, half = ((t + bt/2) % bt)/bt, bar = Math.floor(t/bt) % 4;
+  const kick = Math.pow(1-ph, 7) + (bar % 2 ? Math.pow(1 - ((t + bt/4) % bt)/bt, 9)*.8 : 0);
+  const snare = (bar === 1 || bar === 3) ? Math.pow(1-half, 5) : 0;
+  const k = Math.min(1, kick);
+  eqL.forEach((e, i) => { const f = i/(eqL.length-1);
+    const target = Math.min(1, (kick*(1.1-f*.6) + snare*(.6+.4*Math.sin(f*7+t)) + Math.random()*.4*(.4+f))*1.5);
+    eqLv[i] += (target - eqLv[i]) * (target > eqLv[i] ? .85 : .28);
+    e.style.setProperty("--v", eqLv[i].toFixed(3));
+    e.style.setProperty("--k", (k > .45 ? k*(Math.random() > .5 ? 1 : -1) : 0).toFixed(3)); });
+  requestAnimationFrame(eqFrame);
+}
+function setEq(on){ eqOn = on; eqv.classList.toggle("on", on); if(on){ eqT0 = performance.now(); requestAnimationFrame(eqFrame); } }
+
 function confetti(){
   const items = ["🎸","🎟","✨","🎉","💜","⭐","🎶"];
   for(let i = 0; i < 70; i++){
