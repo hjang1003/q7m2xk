@@ -287,6 +287,8 @@ h2{font-size:30px;transform:rotate(2deg)}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 .cm-hint{font-size:15px;background:#fff;color:#111;padding:5px 12px;animation:blink2 1s ease-in-out infinite}
 .conf{position:fixed;top:-20px;z-index:72;pointer-events:none;font-size:22px}
+#cardModal.pos-a #eqv,#cardModal.pos-a .cm-hint{position:absolute;left:50%;transform:translateX(-50%);margin:0}
+
 
 /* 실물 카드 시안 */
 .cm-card{--bs:0 0 0 3px #111,8px 8px 0 #000;box-shadow:var(--bs)}
@@ -414,7 +416,7 @@ h2{font-size:30px;transform:rotate(2deg)}
 </div>
 <div id="fly"><span id="flyNum"></span></div>
 
-<div id="cardModal">
+<div id="cardModal" class="pos-a">
   <div id="cmGlow"></div>
   <button class="cm-x" id="cardClose">✕</button>
   <div class="cm-card m-gold2 fx-foil fx-frame fx-gloss" id="cmCard">
@@ -1058,7 +1060,7 @@ let cmBusy = false, cmBack = false;
 $("cardBtn").onclick = (e) => {
   e.stopPropagation(); audio(); ding(); loadSong();
   cmBack = false; $("cmFront").style.visibility = "visible"; $("cmBack").style.visibility = "hidden"; $("cmCard").classList.remove("back-on"); setEq(false);
-  $("cardModal").classList.add("on");
+  $("cardModal").classList.add("on"); placeBelow();
   $("cmCard").animate([{ transform: "scale(.3) rotate(-15deg)", opacity: 0 }, { transform: "scale(1) rotate(0)", opacity: 1 }], { duration: 450, easing: "cubic-bezier(.2,1.4,.5,1)" });
 };
 $("cardClose").onclick = () => { $("cardModal").classList.remove("on"); setEq(false); };
@@ -1215,6 +1217,21 @@ function confetti(){
      .onfinish = () => e.remove();
   }
 }
+
+/* 카드 위치 A: 카드는 화면 정중앙, 이퀄라이저·안내문은 카드 바로 아래에 띄움 */
+function placeBelow(){
+  const m = $("cardModal"); if(!m.classList.contains("pos-a")) { $("eqv").style.top = $("cmHint").style.top = $("cmCard").style.top = ""; return; }
+  const c = $("cmCard"); c.style.top = "0px";
+  const over = c.offsetTop + c.offsetHeight + 4 + $("eqv").offsetHeight - (innerHeight - 8);
+  c.style.top = over > 0 ? (-Math.min(over, Math.max(0, c.offsetTop - 8))) + "px" : "0px";       // 화면이 작으면 이퀄라이저가 들어갈 만큼만 살짝 올림
+  const y = c.offsetTop + c.offsetHeight;
+  $("eqv").style.top = (y + 4) + "px"; $("cmHint").style.top = (y + 16) + "px";
+}
+window.addEventListener("resize", placeBelow);
+/* $("cardModal").classList.toggle("pos-a", p === "a"); placeBelow(); document.querySelectorAll("#pv [data-p]").forEach(b => b.classList.toggle("sel", b.dataset.p === p)); };
+document.querySelectorAll("#pv [data-p]").forEach(b => b.onclick = () => setPos(b.dataset.p)); setPos("a");
+$("pvO").onclick = () => { audio(); fillTicket(); show("s-ticket"); $("tTitle").style.visibility = "visible"; $("cardBtn").click(); requestAnimationFrame(placeBelow); };
+*/
 
 window.addEventListener("resize", () => { if($("s-wheel").classList.contains("on") && !spinning) drawWheel(); });
 if(document.fonts) document.fonts.ready.then(() => { if($("s-wheel").classList.contains("on")) render(); });
