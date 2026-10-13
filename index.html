@@ -974,7 +974,7 @@ setInterval(() => { const d = new Date(2027, 2, 22, 23, 58, 41 + Math.floor(perf
 
 /* ---------- 카드 뒷면: 곡 + 이퀄라이저 + 몽환→터짐→역빌드업 ---------- */
 // 곡 파일 = 원곡 2:22.0 ~ 끝 (song.mp3)
-const T_DROP = 29.0, T_REW0 = 58.0, T_REW1 = 65.0, FADE = 4, SONG_GAIN = 0.28;
+const T_DROP = 29.0, T_REW0 = 58.0, T_REW1 = 65.0, FADE = 4, SONG_GAIN = 0.224;
 const eqv = $("eqv"), eqL = [...eqv.children], eqLv = eqL.map(() => .3);
 const back = $("cmBack"), card = $("cmCard");
 const bPh = back.querySelector(".gb-ph"), bM = back.querySelector(".gb-ph .m"), bSil = back.querySelector(".gb-ph .sil");
