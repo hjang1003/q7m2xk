@@ -167,7 +167,8 @@ h2{font-size:30px;transform:rotate(2deg)}
 #cardModal{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(0,0,0,.93);padding:16px}
 #cardModal.on{display:flex}
 .cm-x{z-index:20;position:absolute;top:44px;right:16px;width:40px;height:40px;border-radius:50%;border:3px solid #fff;background:var(--k);color:#fff;font-size:20px;cursor:pointer}
-.cm-card{position:relative;width:min(320px,78vw,52vh);cursor:pointer}
+.cm-card{position:relative;width:min(320px,78vw,52vh);cursor:pointer;touch-action:none}
+.cm-card,.cm-card *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}
 .cm-face{width:100%}
 .cm-back{position:absolute;inset:0;visibility:hidden;background:#0d120d}
 .poster.on-card{display:block;margin:0;border:0;box-shadow:none}
@@ -286,6 +287,7 @@ h2{font-size:30px;transform:rotate(2deg)}
 @keyframes tw{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:1;transform:scale(1)}}
 .cm-hint{font-size:15px;background:#fff;color:#111;padding:5px 12px;animation:blink2 1s ease-in-out infinite}
 .conf{position:fixed;top:-20px;z-index:72;pointer-events:none;font-size:22px}
+
 /* 실물 카드 시안 */
 .cm-card{--bs:0 0 0 3px #111,8px 8px 0 #000;box-shadow:var(--bs)}
 .cm-card.m-gold2{border-color:#ffd84a;--e1:#ffe27a;--e2:#f0c940;--e3:#d4a827;--e4:#a88016;--f1:#c9a227;--f2:#fff6c4;--f3:#f2cf55;--f4:#fffbe6;--f5:#e0b83a;--f6:#ffe680;--ld:rgba(120,85,0,.5);--ll:rgba(255,248,210,.9)}
@@ -374,7 +376,7 @@ h2{font-size:30px;transform:rotate(2deg)}
         <div><span class="lab">VENUE</span><span class="val">올림픽홀</span></div>
         <div><span class="lab">ZONE</span><span class="val">스탠딩</span></div>
       </div>
-      <div class="for"><span class="lab">HOLDER</span><span id="forName"></span></div>
+      <div class="for"><span class="lab">FOR</span><span id="forName"></span></div>
       <div class="no">
         <span class="lab">STANDING No.</span>
         <div class="num" id="slot"></div>
@@ -1003,6 +1005,7 @@ $("flip").onclick = () => {
 
 
 /* ---------- 내한 기념 카드 ---------- */
+let TILT = "drag", dragMoved = false;
 (() => {
   const c = $("cmCard");
   for(let i = 0; i < 7; i++){ const sp = document.createElement("span"); sp.className = "spark"; sp.textContent = "✦";
@@ -1015,9 +1018,39 @@ $("flip").onclick = () => {
     c.style.setProperty("--gpx", (100 - px*100).toFixed(1) + "%"); c.style.setProperty("--gpy", (100 - py*100).toFixed(1) + "%"); };
   const tilt = (px, py) => { setLight(px, py); c.style.transform = `perspective(700px) rotateY(${(px-.5)*14}deg) rotateX(${(.5-py)*14}deg)`; };
   const mv = (x, y) => { const r = c.getBoundingClientRect(); tilt((x - r.left)/r.width, (y - r.top)/r.height); };
-  c.addEventListener("pointermove", e => mv(e.clientX, e.clientY));
-  c.addEventListener("touchmove", e => { const t = e.touches[0]; mv(t.clientX, t.clientY); }, { passive: true });
-  const rs = () => { c.style.transform = ""; }; c.addEventListener("pointerleave", rs); c.addEventListener("touchend", rs);
+  c.addEventListener("pointermove", e => { if(TILT === "old") mv(e.clientX, e.clientY); });
+  c.addEventListener("touchmove", e => { if(TILT !== "old") return; const t = e.touches[0]; mv(t.clientX, t.clientY); }, { passive: true });
+  const rs = () => { if(TILT === "old") c.style.transform = ""; }; c.addEventListener("pointerleave", rs); c.addEventListener("touchend", rs);
+
+  /* 기울이기 시안: 1 드래그(최대 25도 + 용수철 복귀) / 2 튕기기 / 1+2 */
+  let rx = 0, ry = 0, vx = 0, vy = 0, trx = 0, tryy = 0, holding = false, pid = null, sx0 = 0, sy0 = 0, hist = [];
+  const follow = () => TILT === "drag" || TILT === "both";
+  const flick = () => TILT === "flick" || TILT === "both";
+  const target = (x, y) => { const r = c.getBoundingClientRect(); const px = Math.min(1, Math.max(0, (x - r.left)/r.width)), py = Math.min(1, Math.max(0, (y - r.top)/r.height));
+    const m = follow() ? 50 : 12; tryy = (px - .5)*m; trx = (.5 - py)*m; };
+  c.addEventListener("pointerdown", e => { if(TILT === "old" || cmBusy) return; holding = true; pid = e.pointerId; sx0 = e.clientX; sy0 = e.clientY; dragMoved = false;
+    hist = [[e.clientX, e.clientY, performance.now()]]; try{ c.setPointerCapture(pid); }catch(_){} target(e.clientX, e.clientY); });
+  c.addEventListener("pointermove", e => { if(!holding || e.pointerId !== pid) return;
+    if(Math.hypot(e.clientX - sx0, e.clientY - sy0) > 10) dragMoved = true;
+    hist.push([e.clientX, e.clientY, performance.now()]); if(hist.length > 6) hist.shift(); target(e.clientX, e.clientY); });
+  const up = e => { if(!holding) return; holding = false; trx = tryy = 0;
+    if(flick() && hist.length > 1){ const a = hist[0], b = hist[hist.length - 1], dt = Math.max(16, b[2] - a[2]);
+      if(performance.now() - b[2] < 80){ vy += (b[0] - a[0])/dt*300; vx -= (b[1] - a[1])/dt*300; } } };
+  c.addEventListener("pointerup", up); c.addEventListener("pointercancel", up);
+  c.addEventListener("dragstart", e => e.preventDefault());
+  let last = performance.now();
+  (function loop(now){
+    const dt = Math.min(.033, (now - last)/1000); last = now;
+    if(TILT !== "old" && $("cardModal").classList.contains("on")){
+      const k = holding ? 260 : 120, d = holding ? 26 : 6;
+      vx += (-k*(rx - trx) - d*vx)*dt; vy += (-k*(ry - tryy) - d*vy)*dt;
+      rx = Math.max(-55, Math.min(55, rx + vx*dt)); ry = Math.max(-55, Math.min(55, ry + vy*dt));
+      if(!cmBusy){ c.style.transform = `perspective(700px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg)`;
+        setLight(Math.min(1, Math.max(0, .5 + ry/50)), Math.min(1, Math.max(0, .5 - rx/50))); }
+    }
+    requestAnimationFrame(loop);
+  })(last);
+  window._tiltReset = () => { rx = ry = vx = vy = trx = tryy = 0; holding = false; c.style.transform = ""; };
   window.addEventListener("deviceorientation", e => { if(e.gamma == null) return;
     setLight(Math.min(1, Math.max(0, .5 + e.gamma/60)), Math.min(1, Math.max(0, .5 + (e.beta-45)/60))); });
 })();
@@ -1030,6 +1063,7 @@ $("cardBtn").onclick = (e) => {
 };
 $("cardClose").onclick = () => { $("cardModal").classList.remove("on"); setEq(false); };
 $("cmCard").onclick = () => {
+  if(dragMoved){ dragMoved = false; return; }
   if(cmBusy) return; cmBusy = true; audio();
   sweep(300, 1100, .3, "sine", .06);
   const c = $("cmCard");
