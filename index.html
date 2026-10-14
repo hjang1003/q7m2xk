@@ -542,7 +542,8 @@ if(document.fonts) document.fonts.ready.then(setupTicker);
 
 /* ---------- 사운드 ---------- */
 let ac;
-function audio(){ if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac && ac.state === "suspended") ac.resume(); }
+// 아이폰은 앱 전환 등으로 소리가 "interrupted"(중단) 상태가 될 수 있어서, running이 아니면 항상 다시 켬
+function audio(){ if(!ac){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ac && ac.state !== "running"){ try{ ac.resume().catch(() => {}); }catch(e){} } }
 function tone(f, d, type="square", vol=.08, when=0){
   if(!ac) return;
   const t = ac.currentTime + when, o = ac.createOscillator(), g = ac.createGain();
@@ -1129,13 +1130,14 @@ $("cmCard").onclick = () => {
   if(dragMoved){ dragMoved = false; return; }
   if(cmBusy) return; cmBusy = true; audio();
   sweep(300, 1100, .3, "sine", .06);
-  const c = $("cmCard");
+  const c = $("cmCard"), toBack = !cmBack;
+  if(toBack){ stopSong(); eqOn = true; startSong(); }   // 곡은 누르는 순간 시작 (아이폰이 누른 동작 밖에서의 재생을 막는 경우 대비)
   c.animate([{ transform: "scaleX(1)" }, { transform: "scaleX(0)" }], { duration: 180, easing: "ease-in" }).onfinish = () => {
     cmBack = !cmBack;
     $("cmFront").style.visibility = cmBack ? "hidden" : "visible";
     $("cmBack").style.visibility = cmBack ? "visible" : "hidden";
     c.classList.toggle("back-on", cmBack);
-    setEq(cmBack);
+    setEq(cmBack, cmBack);
     c.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1.06)", offset: .7 }, { transform: "scaleX(1)" }], { duration: 260, easing: "ease-out" }).onfinish = () => { cmBusy = false; };
   };
   $("cmHint").style.visibility = "hidden";
@@ -1177,12 +1179,35 @@ function resetFx(){
   card.style.scale = ""; card.style.boxShadow = ""; bPh.style.transform = ""; cmGlow.style.opacity = 0;
   bRB.forEach(e => e.style.translate = "");
 }
+// 곡 파일은 페이지를 열자마자 미리 받아둠 (카드까지 가는 동안 다 받아짐)
+const fetchSong = () => fetch("song.mp3", { cache: "force-cache" }).then(r => { if(!r.ok) throw 0; return r.arrayBuffer(); });
+let songBytesP = fetchSong().catch(() => null), songFailed = false, songEl = null, elSrc = null;
 function loadSong(){
   if(songLoading) return songLoading;
   audio();
-  songLoading = fetch("song.mp3").then(r => r.arrayBuffer()).then(b => new Promise((res, rej) => ac.decodeAudioData(b, res, rej))).then(b => { songBuf = b; return b; }).catch(() => null);
+  songLoading = songBytesP
+    .then(bytes => bytes || fetchSong())                                  // 미리 받기에 실패했으면 한 번 더
+    .then(bytes => new Promise((res, rej) => { try{ const p = ac.decodeAudioData(bytes.slice(0), res, rej); if(p && p.catch) p.catch(rej); }catch(e){ rej(e); } }))
+    .then(b => { songBuf = b; return b; })
+    .catch(() => { songFailed = true; return null; });                  // 실패하면 아래 예비 방식(오디오 태그)으로 재생
   return songLoading;
 }
+// 예비 방식: 브라우저 기본 오디오 태그로 재생 (이퀄라이저도 그대로 연결)
+function startElSong(){
+  try{
+    if(!songEl){ songEl = new Audio("song.mp3"); songEl.preload = "auto"; songEl.setAttribute("playsinline", ""); elSrc = ac.createMediaElementSource(songEl); }
+    songAn = ac.createAnalyser(); songAn.fftSize = 2048; songAn.smoothingTimeConstant = .55;
+    songGain = ac.createGain(); try{ elSrc.disconnect(); }catch(e){}
+    elSrc.connect(songAn); songAn.connect(songGain); songGain.connect(ac.destination);
+    const now = ac.currentTime, dur = (isFinite(songEl.duration) && songEl.duration) || 65.7, end = now + dur - SONG_OFF;
+    songGain.gain.setValueAtTime(.0001, now); songGain.gain.linearRampToValueAtTime(SONG_GAIN, now + (SONG_OFF ? 1 : FADE));
+    songGain.gain.setValueAtTime(SONG_GAIN, end - FADE); songGain.gain.linearRampToValueAtTime(.0001, end);
+    songEl.currentTime = SONG_OFF;
+    const p = songEl.play(); songStart = now - SONG_OFF; songOn = true;
+    if(p && p.catch) p.catch(() => { songOn = false; });
+  }catch(e){ songOn = false; }
+}
+const songTime = () => songEl && !songEl.paused ? songEl.currentTime : ac.currentTime - songStart;
 function applyBack(P){
   const q = 1 - P;
   bPh.style.filter = q > .001 ? `blur(${(q*.72).toFixed(2)}px)` : "none";
@@ -1199,7 +1224,7 @@ function applyBack(P){
 function phaseAt(t){ if(t < T_DROP) return ["dream", 0]; if(t < T_REW0) return ["drop", 1]; if(t < T_REW1) return ["rewind", 1 - (t - T_REW0)/(T_REW1 - T_REW0)]; return ["dream", 0]; }
 function eqFrame(){
   if(!eqOn) return;
-  const t = songOn ? ac.currentTime - songStart : 0;
+  const t = songOn ? songTime() : 0;
   const [ph, P] = phaseAt(t);
   applyBack(P);
   if(ph === "drop" && lastPh !== "drop"){
@@ -1241,11 +1266,16 @@ function eqFrame(){
 function stopSong(){
   if(songSrc){ const s0 = songSrc, g = songGain, now = ac.currentTime;
     try{ g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value, now); g.gain.linearRampToValueAtTime(.0001, now + .3); s0.stop(now + .35); }catch(e){} }
+  if(songEl && !songEl.paused){ const el = songEl, g = songGain, now = ac.currentTime;
+    try{ g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value, now); g.gain.linearRampToValueAtTime(.0001, now + .3); }catch(e){}
+    setTimeout(() => { if(!eqOn) el.pause(); }, 350); }
   songSrc = null; songOn = false;
 }
 async function startSong(){
-  const b = songBuf || await loadSong(); if(!b || !eqOn) return;
-  if(ac.state === "suspended") await ac.resume();
+  if(songFailed){ startElSong(); return; }
+  const b = songBuf || await loadSong(); if(!eqOn) return;
+  if(!b){ startElSong(); return; }
+  if(ac.state !== "running"){ try{ await ac.resume(); }catch(e){} }
   songAn = ac.createAnalyser(); songAn.fftSize = 2048; songAn.smoothingTimeConstant = .55;
   songGain = ac.createGain(); songAn.connect(songGain); songGain.connect(ac.destination);
   songSrc = ac.createBufferSource(); songSrc.buffer = b; songSrc.connect(songAn);
@@ -1255,10 +1285,11 @@ async function startSong(){
   songSrc.start(now, SONG_OFF); songStart = now - SONG_OFF; songOn = true;
   songSrc.onended = () => { if(songSrc && songSrc.buffer === b && ac.currentTime - songStart >= b.duration - .1) songOn = false; };
 }
-function setEq(on){
+function setEq(on, songStarted){
   eqOn = on; eqv.classList.toggle("on", on);
-  stopSong(); lastPh = "dream"; eqLv.fill(.3); applyBack(0); resetFx();
-  if(on){ requestAnimationFrame(eqFrame); startSong(); }
+  if(!songStarted) stopSong();
+  lastPh = "dream"; eqLv.fill(.3); applyBack(0); resetFx();
+  if(on){ requestAnimationFrame(eqFrame); if(!songStarted) startSong(); }
   else card.style.setProperty("--holo", ".4");
 }
 applyBack(0); card.style.setProperty("--holo", ".4");
